@@ -1,0 +1,87 @@
+name: watch
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+# contents: write is used only to publish dedupe state on the state branch.
+permissions:
+  contents: write
+
+concurrency:
+  group: satoshi-watcher
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout watchlist
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Load dedupe state
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          git ls-remote --exit-code --heads origin state >/dev/null || status=$?
+          if [ "$status" -eq 0 ]; then
+            git fetch --depth=1 origin state
+            git show FETCH_HEAD:state.json > state.json
+          elif [ "$status" -eq 2 ]; then
+            printf '%s\n' '{"last_alerts":{},"last_prices":{}}' > state.json
+          else
+            echo "failed to query origin/state (exit ${status})" >&2
+            exit "$status"
+          fi
+
+      - name: Unit tests
+        shell: bash
+        run: python3 -m unittest discover -s tests
+
+      - name: Run watcher
+        shell: bash
+        env:
+          SATOSHI_WEBHOOK_URL: ${{ secrets.SATOSHI_WEBHOOK_URL }}
+          SATOSHI_WEBHOOK_AUTH: ${{ secrets.SATOSHI_WEBHOOK_AUTH }}
+        run: python3 watcher.py --watchlist watchlist.json --state state.json
+
+      - name: Publish dedupe state
+        shell: bash
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          parent=""
+          status=0
+          git ls-remote --exit-code --heads origin state >/dev/null || status=$?
+          if [ "$status" -eq 0 ]; then
+            git fetch --depth=1 origin state
+            parent="$(git rev-parse FETCH_HEAD)"
+          elif [ "$status" -ne 2 ]; then
+            echo "failed to query origin/state (exit ${status})" >&2
+            exit "$status"
+          fi
+          blob="$(git hash-object -w state.json)"
+          if [ -n "$parent" ]; then
+            previous="$(git rev-parse "${parent}:state.json")"
+            if [ "$previous" = "$blob" ]; then
+              echo "dedupe state unchanged; not committing"
+              exit 0
+            fi
+          fi
+          tree="$(printf '100644 blob %s\tstate.json\n' "$blob" | git mktree)"
+          if [ -n "$parent" ]; then
+            commit="$(git commit-tree "$tree" -p "$parent" -m "Update watcher dedupe state")"
+          else
+            commit="$(git commit-tree "$tree" -m "Update watcher dedupe state")"
+          fi
+          git push origin "${commit}:refs/heads/state"
+          echo "published dedupe state ${commit}"
