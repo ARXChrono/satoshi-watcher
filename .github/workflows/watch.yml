@@ -2,7 +2,9 @@ name: watch
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # GitHub crowds minute 0, and the original */5 schedule never registered.
+    # 3-58/5 still runs every 5 minutes, off :00, and re-registers the schedule.
+    - cron: "3-58/5 * * * *"
   workflow_dispatch:
 
 # contents: write is used only to publish dedupe state on the state branch.
