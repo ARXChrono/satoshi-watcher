@@ -1,16 +1,5 @@
 {
-  "open_trades": [
-    {
-      "id": "P1",
-      "symbol": "GATO",
-      "chain": "solana",
-      "mint": "HsprHxBRgiVaQdRf3TnKNuZZtaX9JUSPgMFdAkk6pump",
-      "entry": 0.007724,
-      "stop": 0.006952,
-      "take_profit": 0.010814,
-      "opened_at": "2026-11-11T06:13:26Z"
-    }
-  ],
+  "open_trades": [],
   "watch": [],
   "scan": {
     "min_liquidity_usd": 250000,
