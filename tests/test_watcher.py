@@ -492,7 +492,7 @@ class RunTest(unittest.TestCase):
 class WorkflowTest(unittest.TestCase):
     def test_workflow_contract(self):
         text = (ROOT / ".github" / "workflows" / "watch.yml").read_text(encoding="utf-8")
-        self.assertIn('cron: "*/5 * * * *"', text)
+        self.assertIn('cron: "3-58/5 * * * *"', text)
         self.assertIn("workflow_dispatch:", text)
         self.assertIn("contents: write", text)
         self.assertIn("group: satoshi-watcher", text)

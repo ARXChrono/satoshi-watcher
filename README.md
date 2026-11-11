@@ -99,7 +99,7 @@ Alert timestamps and the last price of level-watched mints are stored in `state.
 
 ## Run it
 
-The schedule is `*/5 * * * *` on the default branch. GitHub may start a scheduled run a few minutes late. The job uses Python from the runner, with no extra packages, and is capped at 2 minutes.
+The schedule is `3-58/5 * * * *` (every 5 minutes, starting at minute 3) on the default branch. GitHub may start a scheduled run a few minutes late. The job uses Python from the runner, with no extra packages, and is capped at 2 minutes.
 
 **Manually:** open the **Actions** tab, choose **watch**, and use **Run workflow**.
 
