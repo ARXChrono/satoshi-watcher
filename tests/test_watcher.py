@@ -72,13 +72,12 @@ def quote(price, liquidity=300000, h1=0, h6=0, symbol="GATO"):
 
 
 class LogicTest(unittest.TestCase):
-    def test_seed_watchlist_matches_the_open_gato_trade(self):
+    def test_live_watchlist_is_well_formed(self):
+        # watchlist.json changes as paper trades open and close, so only check its shape.
         data = watcher.load_watchlist(ROOT / "watchlist.json")
-        self.assertEqual(data["open_trades"][0]["symbol"], "GATO")
-        self.assertEqual(data["open_trades"][0]["mint"], GATO)
-        self.assertEqual(data["open_trades"][0]["opened_at"], "2026-11-11T06:13:26Z")
+        self.assertIsInstance(data["open_trades"], list)
+        self.assertIsInstance(data["watch"], list)
         self.assertEqual(data["scan"]["min_liquidity_usd"], 250000)
-        self.assertEqual(data["watch"], [])
 
     def test_deepest_liquidity_pair_wins(self):
         quotes = watcher.quotes_by_mint(
