@@ -1,5 +1,16 @@
 {
-  "open_trades": [],
+  "open_trades": [
+    {
+      "id": "P2",
+      "symbol": "RAMBO",
+      "chain": "solana",
+      "mint": "KMifrkYmDdAKtVXAVBEPEQxJ7qP2iLgUcfZjUZipump",
+      "entry": 0.01128,
+      "stop": 0.010152,
+      "take_profit": 0.01579,
+      "opened_at": "2026-11-12T14:58:01Z"
+    }
+  ],
   "watch": [],
   "scan": {
     "min_liquidity_usd": 250000,
